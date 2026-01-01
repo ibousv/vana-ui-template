@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vana AI Frontend
+
+A modern Next.js 14 frontend for the Vana AI conversational data platform.
+
+## Features
+
+- 🤖 **AI Chat Interface** - Natural language queries with SQL generation
+- 📊 **Dashboard & Visualizations** - Data results in tables and charts
+- 🗄️ **Data Source Management** - Connect and manage multiple databases
+- ⚙️ **Admin Interface** - User and tenant management
+- 🔒 **Multi-tenant Support** - Secure tenant isolation
+- 🎨 **Modern UI** - Clean, responsive design with Tailwind CSS
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
-## Learn More
+## API Integration
 
-To learn more about Next.js, take a look at the following resources:
+The frontend connects to a FastAPI backend with endpoints:
+- `POST /api/chat` - Send chat messages
+- `GET /api/datasources` - Get data sources
+- `POST /api/datasources/test` - Test connections
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework**: Next.js 14 with App Router
+- **Styling**: Tailwind CSS
+- **TypeScript**: Full type safety
+- **Components**: Modular, reusable components
+- **State**: React hooks for local state management
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/                 # Next.js app router
+├── components/          # Reusable UI components
+├── lib/                # Utilities and API services
+└── types/              # TypeScript type definitions
+```
