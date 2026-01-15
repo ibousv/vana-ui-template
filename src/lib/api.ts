@@ -1,34 +1,29 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-export interface ChatMessage {
-  message: string;
-  tenant_id?: string;
-}
-
-export interface ChatResponse {
-  response: string;
-  sql?: string;
-  results?: any[];
-  error?: string;
-}
+import type { ChatMessage, ChatResponse, DataSource } from '@/types';
+import { config } from './config';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = `${config.apiUrl}${endpoint}`;
     
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    });
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        ...options,
+      });
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: response.statusText }));
+        throw new Error(error.message || `API Error: ${response.status}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      throw new Error('Network error occurred');
     }
-
-    return response.json();
   }
 
   async sendChatMessage(message: ChatMessage): Promise<ChatResponse> {
@@ -38,11 +33,11 @@ class ApiService {
     });
   }
 
-  async getDataSources(): Promise<any[]> {
-    return this.request<any[]>('/api/datasources');
+  async getDataSources(): Promise<DataSource[]> {
+    return this.request<DataSource[]>('/api/datasources');
   }
 
-  async testConnection(datasource: any): Promise<{ success: boolean; message: string }> {
+  async testConnection(datasource: Partial<DataSource>): Promise<{ success: boolean; message: string }> {
     return this.request('/api/datasources/test', {
       method: 'POST',
       body: JSON.stringify(datasource),

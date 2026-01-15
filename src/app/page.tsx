@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import ChatInterface from '@/components/ChatInterface';
 import Dashboard from '@/components/Dashboard';
+import DataSources from '@/components/DataSources';
 import Sidebar from '@/components/Sidebar';
 
 export default function Home() {
@@ -14,7 +15,7 @@ export default function Home() {
       <main className="flex-1 flex flex-col">
         {activeView === 'chat' && <ChatInterface />}
         {activeView === 'dashboard' && <Dashboard />}
-        {activeView === 'datasources' && <div className="p-6">Data Sources coming soon...</div>}
+        {activeView === 'datasources' && <DataSources />}
         {activeView === 'admin' && <div className="p-6">Admin Panel coming soon...</div>}
       </main>
     </div>

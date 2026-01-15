@@ -1,15 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-
-interface Message {
-  id: string;
-  type: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  sql?: string;
-  results?: any[];
-}
+import { apiService } from '@/lib/api';
+import type { Message } from '@/types';
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
@@ -25,7 +18,7 @@ export default function ChatInterface() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -38,33 +31,41 @@ export default function ChatInterface() {
     setInput('');
     setIsLoading(true);
 
-    // Simulate API call to FastAPI backend
-    setTimeout(() => {
+    try {
+      const response = await apiService.sendChatMessage({ message: input });
+      
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: 'I understand your question. Here\'s what I found:',
+        content: response.response,
         timestamp: new Date(),
-        sql: 'SELECT * FROM users WHERE created_at > \'2024-01-01\'',
-        results: [
-          { id: 1, name: 'John Doe', email: 'john@example.com' },
-          { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
-        ]
+        sql: response.sql,
+        results: response.results,
+        error: response.error,
       };
+      
       setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: 'Sorry, I encountered an error processing your request.',
+        timestamp: new Date(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <h2 className="text-lg font-semibold text-gray-900">AI Chat</h2>
         <p className="text-sm text-gray-500">Ask questions about your data in natural language</p>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => (
           <div
@@ -80,6 +81,12 @@ export default function ChatInterface() {
             >
               <p className="text-sm">{message.content}</p>
               
+              {message.error && (
+                <div className="mt-3 p-3 bg-red-50 rounded border border-red-200">
+                  <p className="text-xs font-medium text-red-600">Error: {message.error}</p>
+                </div>
+              )}
+              
               {message.sql && (
                 <div className="mt-3 p-3 bg-gray-100 rounded border">
                   <p className="text-xs font-medium text-gray-600 mb-1">Generated SQL:</p>
@@ -87,7 +94,7 @@ export default function ChatInterface() {
                 </div>
               )}
               
-              {message.results && (
+              {message.results && message.results.length > 0 && (
                 <div className="mt-3">
                   <p className="text-xs font-medium text-gray-600 mb-2">Results:</p>
                   <div className="overflow-x-auto">
@@ -136,7 +143,6 @@ export default function ChatInterface() {
         )}
       </div>
 
-      {/* Input */}
       <div className="bg-white border-t border-gray-200 p-6">
         <form onSubmit={handleSubmit} className="flex space-x-4">
           <input
@@ -146,11 +152,13 @@ export default function ChatInterface() {
             placeholder="Ask a question about your data..."
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isLoading}
+            aria-label="Chat message input"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
             className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            aria-label="Send message"
           >
             Send
           </button>
